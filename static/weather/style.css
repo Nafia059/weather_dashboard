@@ -1,0 +1,186 @@
+/* --- General body styles --- */
+body {
+    background-size: cover;
+    background-position: center;
+    font-family: Arial, sans-serif;
+    color: white;
+    min-height: 100vh;
+    margin: 0;
+    transition: background 0.5s ease-in-out;
+    background: rgba(0, 0, 0, 0.3); /* Adds a subtle overlay for readability */
+}
+
+/* --- Main Dashboard Container --- */
+.main-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    min-height: 100vh;
+    box-sizing: border-box;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Top Bar and Search Form --- */
+.top-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+}
+
+.search-form input[type="text"] {
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.search-form button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    background: #3498db;
+    color: white;
+    cursor: pointer;
+}
+
+/* --- New flex container for current and hourly forecast --- */
+.weather-info-wrapper {
+    display: flex;
+    justify-content: flex-start; /* Changed to flex-start to move everything to the left */
+    align-items: flex-start;
+    gap: 20px; /* Adjust this value to control the space between containers */
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+/* --- Current Weather Section (Left side) --- */
+.current-weather {
+    background: rgba(255, 255, 255, 0);
+    padding: 20px;
+    flex: 1;
+    min-width: 280px;
+    text-align: left;
+}
+
+.city {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.temp-icon-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.main-icon {
+    width: 100px;
+    height: 100px;
+}
+
+.temp-value {
+    font-size: 4rem;
+    font-weight: 300;
+}
+
+.feels-like-text {
+    font-size: 1.2rem;
+}
+
+.description {
+    font-size: 1rem;
+}
+
+/* --- Hourly Forecast Section (Right side) --- */
+.hourly-forecast-container {
+    background: rgba(255, 255, 255, 0.445);
+    padding: 10px;
+    border-radius: 10px;
+    width: 400px;
+    flex-shrink: 0;
+    margin-top: 50px;
+    margin-right: 150px; /* Now this margin will work as intended */
+    margin-left: 0; /* Removing the conflicting margin */
+}
+
+.hourly-forecast-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.hourly-item {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.forecast-time, .forecast-temp {
+    font-size: 0.9em;
+}
+
+.forecast-icon-small {
+    width: 40px;
+    height: 40px;
+}
+
+/* --- Weekly Forecast Section (Bottom) --- */
+.weekly-forecast-container {
+    background: rgba(255, 255, 255, 0);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.weekly-forecast-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.weekly-item {
+    text-align: center;
+    flex-basis: 120px;
+    flex-grow: 1;
+}
+
+.forecast-day {
+    font-size: 1.2rem;
+    margin: 0 0 10px 0;
+}
+
+.forecast-icon-medium {
+    width: 60px;
+    height: 60px;
+}
+
+.forecast-minmax {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.max-temp {
+    font-weight: bold;
+}
+
+.min-temp {
+    opacity: 0.7;
+}
+
+/* --- Error message --- */
+.error {
+    color: #ff5555;
+    font-weight: bold;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    text-align: center;
+}

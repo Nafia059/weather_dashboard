@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="{% static 'weather/style.css' %}">
+    <style>
+        body {
+            /* This style is to handle the dynamic background image */
+            background-image: url("{% static 'weather/images/' %}{{ background_image }}");
+            background-size: cover;
+            background-position: center;
+            transition: background 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-dashboard-container">
+        <div class="top-bar">
+            <form method="get" class="search-form">
+                <input type="text" name="city" placeholder="Enter city" value="{{ city }}" required />
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        {% if weather %}
+        <div class="weather-info-wrapper">
+            <div class="current-weather">
+                <h2 class="city">{{ weather.city }}</h2>
+                <div class="temp-icon-container">
+                    <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@4x.png" alt="Weather icon" class="main-icon" />
+                    <div class="temp-value">{{ weather.temp }}°C</div>
+                </div>
+                <p class="feels-like-text">Feels like {{ weather.feels_like }}°C</p>
+                <p class="description">{{ weather.description }}</p>
+            </div>
+
+            {% if hourly_forecast %}
+            <div class="hourly-forecast-container">
+                <div class="hourly-forecast-grid">
+                    {% for hour in hourly_forecast %}
+                    <div class="hourly-item">
+                        <p class="forecast-time">{{ hour.time }}</p>
+                        <img src="http://openweathermap.org/img/wn/{{ hour.icon }}.png" alt="Weather icon" class="forecast-icon-small" />
+                        <p class="forecast-temp">{{ hour.temp }}°C</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if weekly_forecast %}
+        <div class="weekly-forecast-container">
+            <h2>Weekly Forecast</h2>
+            <div class="weekly-forecast-grid">
+                {% for day in weekly_forecast %}
+                <div class="weekly-item">
+                    <p class="forecast-day">{{ day.day }}</p>
+                    <img src="http://openweathermap.org/img/wn/01d@2x.png
+" alt="Weather icon" class="forecast-icon-medium" />
+                    <p class="forecast-minmax">
+                        <span class="max-temp">{{ day.temp_max }}°C</span> / <span class="min-temp">{{ day.temp_min }}°C</span>
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <p class="error">City not found! Please try again.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

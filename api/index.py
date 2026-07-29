@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import os
 import sys
+import mimetypes
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 
@@ -12,11 +13,19 @@ django.setup()
 from django.template.loader import render_to_string
 from weather.views import get_weather, get_forecast, get_background
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         try:
             parsed = urlparse(self.path)
+            path = parsed.path
+
+            if path.startswith('/static/'):
+                self._serve_static(path)
+                return
+
             query = parse_qs(parsed.query)
             city = query.get('city', ['Sahiwal'])[0]
 
@@ -89,6 +98,29 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-Length', str(len(error_msg)))
             self.end_headers()
             self.wfile.write(error_msg)
+
+    def _serve_static(self, path):
+        rel_path = path.lstrip('/')
+        file_path = os.path.join(BASE_DIR, 'public', rel_path)
+
+        if not os.path.isfile(file_path):
+            self.send_response(404)
+            self.end_headers()
+            return
+
+        content_type, _ = mimetypes.guess_type(file_path)
+        if content_type is None:
+            content_type = 'application/octet-stream'
+
+        with open(file_path, 'rb') as f:
+            data = f.read()
+
+        self.send_response(200)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(len(data)))
+        self.send_header('Cache-Control', 'public, max-age=86400')
+        self.end_headers()
+        self.wfile.write(data)
 
     def do_POST(self):
         self.do_GET()

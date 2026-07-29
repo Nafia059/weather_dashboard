@@ -101,7 +101,7 @@ class handler(BaseHTTPRequestHandler):
 
     def _serve_static(self, path):
         rel_path = path.lstrip('/')
-        file_path = os.path.join(BASE_DIR, 'public', rel_path)
+        file_path = os.path.join(BASE_DIR, rel_path)
 
         if not os.path.isfile(file_path):
             self.send_response(404)

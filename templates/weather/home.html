@@ -1,18 +1,161 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Dashboard</title>
-    <link rel="stylesheet" href="{% static 'weather/style.css' %}">
     <style>
         body {
-            /* This style is to handle the dynamic background image */
-            background-image: url("{% static 'weather/images/' %}{{ background_image }}");
+            background-image: url("/static/weather/images/{{ background_image }}");
             background-size: cover;
             background-position: center;
+            font-family: Arial, sans-serif;
+            color: white;
+            min-height: 100vh;
+            margin: 0;
             transition: background 0.5s ease-in-out;
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        .main-dashboard-container {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+        .search-form input[type="text"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .search-form button {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        .weather-info-wrapper {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .current-weather {
+            background: rgba(255, 255, 255, 0);
+            padding: 20px;
+            flex: 1;
+            min-width: 280px;
+            text-align: left;
+        }
+        .city {
+            font-size: 2rem;
+            margin: 0;
+        }
+        .temp-icon-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .main-icon {
+            width: 100px;
+            height: 100px;
+        }
+        .temp-value {
+            font-size: 4rem;
+            font-weight: 300;
+        }
+        .feels-like-text {
+            font-size: 1.2rem;
+        }
+        .description {
+            font-size: 1rem;
+        }
+        .hourly-forecast-container {
+            background: rgba(255, 255, 255, 0.445);
+            padding: 10px;
+            border-radius: 10px;
+            width: 400px;
+            flex-shrink: 0;
+            margin-top: 50px;
+            margin-right: 150px;
+            margin-left: 0;
+        }
+        .hourly-forecast-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+        .hourly-item {
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .forecast-time, .forecast-temp {
+            font-size: 0.9em;
+        }
+        .forecast-icon-small {
+            width: 40px;
+            height: 40px;
+        }
+        .weekly-forecast-container {
+            background: rgba(255, 255, 255, 0);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .weekly-forecast-grid {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .weekly-item {
+            text-align: center;
+            flex-basis: 120px;
+            flex-grow: 1;
+        }
+        .forecast-day {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+        }
+        .forecast-icon-medium {
+            width: 60px;
+            height: 60px;
+        }
+        .forecast-minmax {
+            margin: 5px 0;
+            font-size: 1rem;
+        }
+        .max-temp {
+            font-weight: bold;
+        }
+        .min-temp {
+            opacity: 0.7;
+        }
+        .error {
+            color: #ff5555;
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            text-align: center;
         }
     </style>
 </head>
@@ -30,7 +173,7 @@
             <div class="current-weather">
                 <h2 class="city">{{ weather.city }}</h2>
                 <div class="temp-icon-container">
-                    <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@4x.png" alt="Weather icon" class="main-icon" />
+                    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@4x.png" alt="Weather icon" class="main-icon" />
                     <div class="temp-value">{{ weather.temp }}°C</div>
                 </div>
                 <p class="feels-like-text">Feels like {{ weather.feels_like }}°C</p>
@@ -43,7 +186,7 @@
                     {% for hour in hourly_forecast %}
                     <div class="hourly-item">
                         <p class="forecast-time">{{ hour.time }}</p>
-                        <img src="http://openweathermap.org/img/wn/{{ hour.icon }}.png" alt="Weather icon" class="forecast-icon-small" />
+                        <img src="https://openweathermap.org/img/wn/{{ hour.icon }}.png" alt="Weather icon" class="forecast-icon-small" />
                         <p class="forecast-temp">{{ hour.temp }}°C</p>
                     </div>
                     {% endfor %}
@@ -59,8 +202,7 @@
                 {% for day in weekly_forecast %}
                 <div class="weekly-item">
                     <p class="forecast-day">{{ day.day }}</p>
-                    <img src="http://openweathermap.org/img/wn/01d@2x.png
-" alt="Weather icon" class="forecast-icon-medium" />
+                    <img src="https://openweathermap.org/img/wn/{{ day.icon }}@2x.png" alt="Weather icon" class="forecast-icon-medium" />
                     <p class="forecast-minmax">
                         <span class="max-temp">{{ day.temp_max }}°C</span> / <span class="min-temp">{{ day.temp_min }}°C</span>
                     </p>

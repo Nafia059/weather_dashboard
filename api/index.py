@@ -1,71 +1,94 @@
 from http.server import BaseHTTPRequestHandler
-import io
-import json
 import os
 import sys
+from urllib.parse import urlparse, parse_qs
+from datetime import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'weather_dashboard.settings')
 
-from django.core.wsgi import get_wsgi_application
+import django
+django.setup()
 
-application = get_wsgi_application()
+from django.template.loader import render_to_string
+from weather.views import get_weather, get_forecast, get_background
 
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self._handle_request('GET')
+        try:
+            parsed = urlparse(self.path)
+            query = parse_qs(parsed.query)
+            city = query.get('city', ['Sahiwal'])[0]
+
+            weather = get_weather(city)
+            hourly_forecast = []
+            weekly_forecast = []
+
+            if weather:
+                background_image = get_background(weather['description'])
+                city_display = weather['city']
+
+                forecast_data = get_forecast(city)
+                if forecast_data:
+                    hourly_data = forecast_data['list'][:8]
+                    for hour in hourly_data:
+                        hourly_forecast.append({
+                            'time': datetime.fromtimestamp(hour['dt']).strftime('%H:%M'),
+                            'temp': int(hour['main']['temp']),
+                            'icon': hour['weather'][0]['icon'],
+                        })
+
+                    daily_data = {}
+                    for entry in forecast_data['list']:
+                        day = datetime.fromtimestamp(entry['dt']).strftime('%A')
+                        if day not in daily_data:
+                            daily_data[day] = {
+                                'date': datetime.fromtimestamp(entry['dt']),
+                                'temp_min': entry['main']['temp_min'],
+                                'temp_max': entry['main']['temp_max'],
+                                'icon': entry['weather'][0]['icon']
+                            }
+                        else:
+                            daily_data[day]['temp_min'] = min(daily_data[day]['temp_min'], entry['main']['temp_min'])
+                            daily_data[day]['temp_max'] = max(daily_data[day]['temp_max'], entry['main']['temp_max'])
+
+                    for day_data in daily_data.values():
+                        weekly_forecast.append({
+                            'day': day_data['date'].strftime('%A'),
+                            'temp_min': int(day_data['temp_min']),
+                            'temp_max': int(day_data['temp_max']),
+                            'icon': day_data['icon']
+                        })
+                        if len(weekly_forecast) >= 7:
+                            break
+            else:
+                background_image = 'default.jpg'
+                city_display = city
+
+            context = {
+                'weather': weather,
+                'background_image': background_image,
+                'city': city_display,
+                'hourly_forecast': hourly_forecast,
+                'weekly_forecast': weekly_forecast,
+            }
+
+            html = render_to_string('weather/home.html', context)
+            html_bytes = html.encode('utf-8')
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Length', str(len(html_bytes)))
+            self.end_headers()
+            self.wfile.write(html_bytes)
+
+        except Exception as e:
+            error_msg = f'Error: {str(e)}'.encode('utf-8')
+            self.send_response(500)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.send_header('Content-Length', str(len(error_msg)))
+            self.end_headers()
+            self.wfile.write(error_msg)
 
     def do_POST(self):
-        self._handle_request('POST')
-
-    def do_PUT(self):
-        self._handle_request('PUT')
-
-    def do_DELETE(self):
-        self._handle_request('DELETE')
-
-    def do_PATCH(self):
-        self._handle_request('PATCH')
-
-    def _handle_request(self, method):
-        content_length = int(self.headers.get('Content-Length', 0))
-        body = self.rfile.read(content_length) if content_length else b''
-
-        environ = {
-            'REQUEST_METHOD': method,
-            'SERVER_NAME': self.headers.get('Host', 'localhost'),
-            'SERVER_PORT': '443',
-            'PATH_INFO': self.path,
-            'QUERY_STRING': self.path.split('?', 1)[1] if '?' in self.path else '',
-            'SERVER_PROTOCOL': self.request_version,
-            'wsgi.input': io.BytesIO(body),
-            'wsgi.errors': sys.stderr,
-            'wsgi.url_scheme': 'https',
-        }
-
-        for key, value in self.headers.items():
-            key_upper = key.upper().replace('-', '_')
-            environ[f'HTTP_{key_upper}'] = value
-
-        response_started = []
-        response_body = []
-
-        def start_response(status, headers, exc_info=None):
-            response_started.append((status, headers))
-
-        try:
-            response = application(environ, start_response)
-            status, resp_headers = response_started[0]
-
-            self.send_response(int(status.split(' ')[0]))
-            for key, value in resp_headers:
-                self.send_header(key, value)
-            self.end_headers()
-
-            for chunk in response:
-                self.wfile.write(chunk)
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-Type', 'text/plain')
-            self.end_headers()
-            self.wfile.write(str(e).encode())
+        self.do_GET()
